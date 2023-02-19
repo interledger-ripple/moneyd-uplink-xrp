@@ -20,9 +20,11 @@ const base64url = buf => buf
   .replace(/\//g, '_')
 
 async function configure ({ testnet, advanced }) {
-  const servers = connectorList[testnet ? 'test' : 'live']
+  // const servers = connectorList[testnet ? 'test' : 'live']
+  const servers = process.env.CONNECTOR_URL ? [process.env.CONNECTOR_URL] : connectorList[testnet ? 'test' : 'live']
   const defaultParent = servers[Math.floor(Math.random() * servers.length)]
-  const rippledServers = rippledList[testnet ? 'test' : 'live']
+  // const rippledServers = rippledList[testnet ? 'test' : 'live']
+  const rippledServers = process.env.RIPPLED_URL ? [process.env.RIPPLED_URL] : rippledList[testnet ? 'test' : 'live']
   const defaultRippled = rippledServers[Math.floor(Math.random() * rippledServers.length)]
   const res = {}
   const fields = [{
