@@ -24,7 +24,7 @@ async function configure ({ testnet, advanced }) {
   const servers = process.env.CONNECTOR_URL ? [process.env.CONNECTOR_URL] : connectorList[testnet ? 'test' : 'live']
   const defaultParent = servers[Math.floor(Math.random() * servers.length)]
   // const rippledServers = rippledList[testnet ? 'test' : 'live']
-  const rippledServers = process.env.RIPPLED_URL ? [process.env.RIPPLED_URL] : rippledList[testnet ? 'test' : 'live']
+  const rippledServers = process.env.RIPPLED_URL ? [`ws://${process.env.RIPPLED_URL}`] : rippledList[testnet ? 'test' : 'live']
   const defaultRippled = rippledServers[Math.floor(Math.random() * rippledServers.length)]
   const res = {}
   const fields = [{
