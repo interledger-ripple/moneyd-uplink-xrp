@@ -19,12 +19,14 @@ const base64url = buf => buf
   .replace(/\+/g, '-')
   .replace(/\//g, '_')
 
-async function configure ({ testnet, advanced }) {
+async function configure({ testnet, advanced }) {
   // const servers = connectorList[testnet ? 'test' : 'live']
+  // process.env.CONNECTOR_URL = ilsp1.solsticehub.io/moneyd
   const servers = process.env.CONNECTOR_URL ? [process.env.CONNECTOR_URL] : connectorList[testnet ? 'test' : 'live']
   const defaultParent = servers[Math.floor(Math.random() * servers.length)]
   // const rippledServers = rippledList[testnet ? 'test' : 'live']
-  const rippledServers = process.env.RIPPLED_URL ? [`ws://${process.env.RIPPLED_URL}`] : rippledList[testnet ? 'test' : 'live']
+  // process.env.RIPPLED_URL = wss://s1.ripple.com
+  const rippledServers = process.env.RIPPLED_URL ? [process.env.RIPPLED_URL] : rippledList[testnet ? 'test' : 'live']
   const defaultRippled = rippledServers[Math.floor(Math.random() * rippledServers.length)]
   const res = {}
   const fields = [{
@@ -133,7 +135,7 @@ const commands = [
   }
 ]
 
-function makeUplink (config) {
+function makeUplink(config) {
   return new XrpUplink(config)
 }
 
@@ -145,11 +147,11 @@ class XrpUplink {
     this.subscribed = false
   }
 
-  async printChannels () {
+  async printChannels() {
     await this._printChannels(await this._listChannels())
   }
 
-  async _printChannels (channels) {
+  async _printChannels(channels) {
     console.log('connecting to xrp ledger...')
     const api = await this._rippleApi()
     const res = await api.getAccountInfo(this.pluginOpts.address)
@@ -167,17 +169,17 @@ class XrpUplink {
     }
 
     console.log(table([
-      [ chalk.green('index'),
-        chalk.green('channel id'),
-        chalk.green('destination'),
-        chalk.green('amount (drops)'),
-        chalk.green('balance (drops)'),
-        chalk.green('expiry') ],
+      [chalk.green('index'),
+      chalk.green('channel id'),
+      chalk.green('destination'),
+      chalk.green('amount (drops)'),
+      chalk.green('balance (drops)'),
+      chalk.green('expiry')],
       ...channels.map(formatChannelToRow)
     ]))
   }
 
-  async cleanupChannels () {
+  async cleanupChannels() {
     const allChannels = await this._listChannels()
     await this._printChannels(allChannels)
     if (!allChannels.length) return
@@ -204,7 +206,7 @@ class XrpUplink {
     }
   }
 
-  async _listChannels () {
+  async _listChannels() {
     const api = await this._rippleApi()
     console.log('fetching channels...')
     const res = await api.connection.request({
@@ -214,13 +216,13 @@ class XrpUplink {
     return res.channels
   }
 
-  async topup (amount) {
+  async topup(amount) {
     const plugin = new Plugin(this.pluginOpts)
     await plugin.connect()
     await plugin.sendMoney(amount)
   }
 
-  async _rippleApi () {
+  async _rippleApi() {
     if (!this.api) {
       this.api = new RippleAPI({ server: this.pluginOpts.xrpServer })
       await this.api.connect()
@@ -228,14 +230,14 @@ class XrpUplink {
     return this.api
   }
 
-  async _submitter () {
+  async _submitter() {
     const api = await this._rippleApi()
 
     if (!this.subscribed) {
       this.subscribed = true
       await api.connection.request({
         command: 'subscribe',
-        accounts: [ this.pluginOpts.address ]
+        accounts: [this.pluginOpts.address]
       })
     }
 
@@ -243,14 +245,14 @@ class XrpUplink {
   }
 }
 
-function formatChannelExpiration (exp) {
+function formatChannelExpiration(exp) {
   if (!exp) return ''
   const unixExp = (exp + 0x386D4380) * 1000
   if (unixExp <= Date.now()) return chalk.blue('ready to close')
   return chalk.yellow('in ' + moment.duration(unixExp - Date.now()).humanize())
 }
 
-function formatChannelToRow (c, i) {
+function formatChannelToRow(c, i) {
   return [
     String(i),
     c.channel_id.substring(0, 8) + '...',
@@ -261,7 +263,7 @@ function formatChannelToRow (c, i) {
   ]
 }
 
-async function validateAddress (server, address) {
+async function validateAddress(server, address) {
   const api = new RippleAPI({ server })
   await api.connect()
   const accountInfo = await api.getAccountInfo(address).catch((err) => {
@@ -283,7 +285,7 @@ async function validateAddress (server, address) {
   }
 }
 
-function comma (a) {
+function comma(a) {
   return a
     .split('')
     .map((e, i) => {
@@ -296,7 +298,7 @@ function comma (a) {
     .join('')
 }
 
-function hmac (key, message) {
+function hmac(key, message) {
   const h = crypto.createHmac('sha256', key)
   h.update(message)
   return h.digest()
